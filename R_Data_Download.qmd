@@ -1,0 +1,84 @@
+---
+title: "Learn to download Watershed from BC catalogue"
+author: "Sujan Nepali"
+format: html
+editor: visual
+---
+
+## What am I doing?
+
+Downloading the data of Fraser River Basin using R from BC Data Catalog.
+
+## Code
+
+Preparing a code snippet to download a data set.
+
+```{r}
+
+# Remove # from next line if you need to install tha packages.
+# install.packages("bcdata", "sf", "dplyr")
+
+# Loading required libraries
+library(bcdata)
+library(sf)
+library(dplyr)
+```
+
+Let's search for the data.
+
+```{r}
+
+bcdc_search("named watersheds")
+```
+
+```{r}
+
+# Selecting the right ID to Check the required data
+bcdc_get_record("ea63ea04-eab0-4b83-8729-f8a93ac688a1")
+
+```
+
+```{r}
+
+# Now lets query to get some data
+# Use the same ID that you finalized
+data =  bcdc_query_geodata("ea63ea04-eab0-4b83-8729-f8a93ac688a1")
+data
+```
+
+```{r}
+
+bcdc_describe_feature("ea63ea04-eab0-4b83-8729-f8a93ac688a1")
+
+```
+
+```{r}
+
+# Check your previous result to see the name of the basin
+# In this data we require GNIS_NAME column that has fraser basin
+fraser_check <- data |>
+  filter(bcdata::CQL("GNIS_NAME ILIKE '%Fraser River%'")) |>
+  select(GNIS_NAME) |>
+  collect()
+
+
+fraser_check
+```
+
+```{r}
+
+library(ggplot2)
+library(sf)
+
+ggplot(fraser_check) +
+  geom_sf(aes(fill = GNIS_NAME), colour = "grey30", linewidth = 0.2) +
+  labs(title = "Watersheds matching 'Fraser'", fill = "GNIS_NAME") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
+
+```{r}
+
+# sf::st_write(fraser_check, "fraser_river_basin.gpkg", delete_dsn = TRUE)
+```
